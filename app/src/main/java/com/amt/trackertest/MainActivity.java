@@ -1,52 +1,111 @@
 package com.amt.trackertest;
 
+import android.app.DialogFragment;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+
+import com.amt.trackertest.httpTask.HttpHandler;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 
 public class MainActivity extends AppCompatActivity {
+
+
+
+    Button btnLogin;
+    Button btnCreateSession;
+    EditText etUserMail;
+
+    String userMail = "";
+    String user_id = "";
+    String session_id = "";
+
+    public static final String PREFS_NAME = "GPS_PREFS";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        btnLogin = (Button) findViewById(R.id.btnLogin);
+        btnCreateSession = (Button) findViewById(R.id.btnCreateSession);
+        etUserMail = (EditText)findViewById(R.id.etUserMail);
+
+        final LogWriter lw = new LogWriter();
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                userMail = etUserMail.getText().toString();
+
+                if (!userMail.equals("")) {
+                    new HttpHandler() {
+                        @Override
+                        public void onResponse(String result) {
+                            user_id = result;
+                            String temp = "";
+                            Calendar c = Calendar.getInstance();
+                            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                            String formattedDate = df.format(c.getTime());
+                            if (!result.equals("")) {
+                                temp = "Login OK!";
+                                lw.writeToFile("[" + formattedDate + "] " + "Login OK. Session ID: " + session_id + "\\r\\n");
+                            } else {
+                                temp = "Login Error!";
+                                lw.writeToFile("[" + formattedDate + "] " + "Login Error.");
+                            }
+                            DialogFragment back_dialog = new GeneralDialogFragment();
+                            Bundle args = new Bundle();
+                            args.putString("msg", temp);
+                            back_dialog.setArguments(args);
+                            back_dialog.show(getFragmentManager(), "Info msg");
+
+                        }
+                    }.login(userMail,"test");
+                }else{
+                    DialogFragment back_dialog = new GeneralDialogFragment();
+                    Bundle args = new Bundle();
+                    args.putString("msg", getResources().getString(R.string.userMissingMsg));
+                    back_dialog.setArguments(args);
+                    back_dialog.show(getFragmentManager(), "Info msg");
+                }
             }
         });
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+        btnCreateSession.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new HttpHandler() {
+                    @Override
+                    public void onResponse(String result) {
+                        session_id = result;
+                        String temp = "";
+                        Calendar c = Calendar.getInstance();
+                        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        String formattedDate = df.format(c.getTime());
+                        if (!result.equals("")){
+                            temp = "CreateSession OK!";
+                            lw.writeToFile("[" + formattedDate + "] " + "CreateSession OK. Session ID: " + session_id);
+                        }else{
+                            temp = "CreateSession Error!";
+                            lw.writeToFile("[" + formattedDate + "] " + "CreateSession Error.");
+                        }
+                        DialogFragment back_dialog = new GeneralDialogFragment();
+                        Bundle args = new Bundle();
+                        args.putString("msg", temp);
+                        back_dialog.setArguments(args);
+                        back_dialog.show(getFragmentManager(), "Info msg");
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+                    }
+                }.createSession(user_id);
+            }
+        });
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
