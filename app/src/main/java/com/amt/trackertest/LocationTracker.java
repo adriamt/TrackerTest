@@ -3,8 +3,11 @@ package com.amt.trackertest;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -13,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amt.trackertest.httpTask.HttpHandler;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -44,7 +48,7 @@ public class LocationTracker extends Activity implements
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 30000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -95,10 +99,15 @@ public class LocationTracker extends Activity implements
      */
     protected String mLastUpdateTime;
 
+    private String session_id = "";
+    float battery = 0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        session_id = getIntent().getExtras().getString("session_id");
 
         // Locate the UI widgets.
         mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
@@ -262,6 +271,14 @@ public class LocationTracker extends Activity implements
      */
     private void updateUI() {
 
+        battery = getBatteryLevel();
+        new HttpHandler() {
+            @Override
+            public void onResponse(String result) {
+
+            }
+        }.sendLocation(String.valueOf(mCurrentLocation.getLatitude()), String.valueOf(mCurrentLocation.getLongitude()), session_id, String.valueOf(battery));
+
         mLatitudeTextView.setText(String.format("%s: %f", mLatitudeLabel,
                 mCurrentLocation.getLatitude()));
         mLongitudeTextView.setText(String.format("%s: %f", mLongitudeLabel,
@@ -305,9 +322,9 @@ public class LocationTracker extends Activity implements
     protected void onPause() {
         super.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
-        if (mGoogleApiClient.isConnected()) {
+/*        if (mGoogleApiClient.isConnected()) {
             stopLocationUpdates();
-        }
+        }*/
     }
 
     @Override
@@ -394,5 +411,18 @@ public class LocationTracker extends Activity implements
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public float getBatteryLevel() {
+        Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+        // Error checking that probably isn't needed but I added just in case.
+        if(level == -1 || scale == -1) {
+            return 50.0f;
+        }
+
+        return ((float)level / (float)scale) * 100.0f;
     }
 }

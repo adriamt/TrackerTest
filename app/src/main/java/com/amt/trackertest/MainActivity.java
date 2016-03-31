@@ -1,6 +1,7 @@
 package com.amt.trackertest;
 
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 userMail = etUserMail.getText().toString();
+                btnCreateSession.setEnabled(true);
 
                 if (!userMail.equals("")) {
                     new HttpHandler() {
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnCreateSession.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 new HttpHandler() {
                     @Override
                     public void onResponse(String result) {
@@ -101,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
                         args.putString("msg", temp);
                         back_dialog.setArguments(args);
                         back_dialog.show(getFragmentManager(), "Info msg");
+                        Intent myIntent = new Intent(v.getContext(), LocationTracker.class);
+                        myIntent.putExtra("session_id", session_id);
+                        startActivity(myIntent);
 
                     }
                 }.createSession(user_id);

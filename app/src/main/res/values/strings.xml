@@ -13,6 +13,7 @@
 -->
 <resources>
     <string name="app_name">TrackerTest</string>
+    <string name="tittle_location_tracker_activity">LocationTracker</string>
 
     <string name="latitude_label">Latitude</string>
     <string name="longitude_label">Longitude</string>
