@@ -26,12 +26,17 @@
         </activity>
         <activity
             android:name=".LocationTracker"
-            android:label="@string/tittle_location_tracker_activity"></activity>
+            android:label="@string/tittle_location_tracker_activity" />
 
         <service
             android:name=".BackgroundLocationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <receiver
+            android:name=".LocationReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
     </application>
 
 </manifest>

@@ -1,25 +1,37 @@
 package com.amt.trackertest;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.GooglePlayServicesClient
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
-// WEB: https://gist.github.com/blackcj/20efe2ac885c7297a676
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 public class BackgroundLocationService extends Service implements
-        GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationListener {
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     IBinder mBinder = new LocalBinder();
 
+    private GoogleApiClient mGoogleApiClient;
+
     private LocationClient mLocationClient;
+    private PendingIntent locationIntent;
     private LocationRequest mLocationRequest;
     // Flag that indicates if a request is underway.
     private boolean mInProgress;
@@ -36,6 +48,11 @@ public class BackgroundLocationService extends Service implements
     public void onCreate() {
         super.onCreate();
 
+        mGoogleApiClient = new GoogleApiClient.Builder(mThisActivity)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         mInProgress = false;
         // Create the LocationRequest object
@@ -54,35 +71,28 @@ public class BackgroundLocationService extends Service implements
          * handle callbacks.
          */
         mLocationClient = new LocationClient(this, this, this);
-
-
     }
 
     private boolean servicesConnected() {
-
         // Check that Google Play services is available
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
 
         // If Google Play services is available
         if (ConnectionResult.SUCCESS == resultCode) {
-
             return true;
         } else {
-
             return false;
         }
     }
 
-    public int onStartCommand (Intent intent, int flags, int startId)
-    {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        if(!servicesAvailable || mLocationClient.isConnected() || mInProgress)
+        if (!servicesAvailable || mLocationClient.isConnected() || mInProgress)
             return START_STICKY;
 
         setUpLocationClientIfNeeded();
-        if(!mLocationClient.isConnected() || !mLocationClient.isConnecting() && !mInProgress)
-        {
+        if (!mLocationClient.isConnected() || !mLocationClient.isConnecting() && !mInProgress) {
             appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Started", Constants.LOG_FILE);
             mInProgress = true;
             mLocationClient.connect();
@@ -95,21 +105,9 @@ public class BackgroundLocationService extends Service implements
      * Create a new location client, using the enclosing class to
      * handle callbacks.
      */
-    private void setUpLocationClientIfNeeded()
-    {
-        if(mLocationClient == null)
+    private void setUpLocationClientIfNeeded() {
+        if (mLocationClient == null)
             mLocationClient = new LocationClient(this, this, this);
-    }
-
-    // Define the callback method that receives location updates
-    @Override
-    public void onLocationChanged(Location location) {
-        // Report to the UI that the location was updated
-        String msg = Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude());
-        Log.d("debug", msg);
-        // Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        appendLog(msg, Constants.LOCATION_FILE);
     }
 
     @Override
@@ -122,42 +120,34 @@ public class BackgroundLocationService extends Service implements
         return mDateFormat.format(new Date());
     }
 
-    public void appendLog(String text, String filename)
-    {
+    public void appendLog(String text, String filename) {
         File logFile = new File(filename);
-        if (!logFile.exists())
-        {
-            try
-            {
+        if (!logFile.exists()) {
+            try {
                 logFile.createNewFile();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
-        try
-        {
+        try {
             //BufferedWriter for performance, true to set append to file flag
             BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
             buf.append(text);
             buf.newLine();
             buf.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         // Turn off the request flag
         mInProgress = false;
-        if(servicesAvailable && mLocationClient != null) {
-            mLocationClient.removeLocationUpdates(this);
+        if (servicesAvailable && mLocationClient != null) {
+            mLocationClient.removeLocationUpdates(locationIntent);
             // Destroy the current location client
             mLocationClient = null;
         }
@@ -174,19 +164,15 @@ public class BackgroundLocationService extends Service implements
      */
     @Override
     public void onConnected(Bundle bundle) {
-
-        // Request location updates using static settings
-        mLocationClient.requestLocationUpdates(mLocationRequest, this);
+        Intent intent = new Intent(this, LocationReceiver.class);
+        locationIntent = PendingIntent.getBroadcast(getApplicationContext(), 14872, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        mLocationClient.requestLocationUpdates(mLocationRequest, locationIntent);
         appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Connected", Constants.LOG_FILE);
 
     }
 
-    /*
-     * Called by Location Services if the connection to the
-     * location client drops because of an error.
-     */
     @Override
-    public void onDisconnected() {
+    public void onConnectionSuspended(int i) {
         // Turn off the request flag
         mInProgress = false;
         // Destroy the current location client
@@ -194,7 +180,17 @@ public class BackgroundLocationService extends Service implements
         // Display the connection status
         // Toast.makeText(this, DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
         appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected", Constants.LOG_FILE);
+
     }
+
+/*    *//*
+     * Called by Location Services if the connection to the
+     * location client drops because of an error.
+     *//*
+    @Override
+    public void onDisconnected() {
+
+    }*/
 
     /*
      * Called by Location Services if the attempt to
@@ -211,7 +207,6 @@ public class BackgroundLocationService extends Service implements
          * error.
          */
         if (connectionResult.hasResolution()) {
-
             // If no resolution is available, display an error dialog
         } else {
 
