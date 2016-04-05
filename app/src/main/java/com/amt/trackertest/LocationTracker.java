@@ -1,3 +1,4 @@
+/*
 package com.amt.trackertest;
 
 
@@ -26,6 +27,7 @@ import com.google.android.gms.location.LocationServices;
 import java.text.DateFormat;
 import java.util.Date;
 
+*/
 /**
  * Getting Location Updates.
  *
@@ -39,21 +41,26 @@ import java.util.Date;
  * This sample uses Google Play services, but it does not require authentication. For a sample that
  * uses Google Play services for authentication, see
  * https://github.com/googlesamples/android-google-accounts/tree/master/QuickStart.
- */
+ *//*
+
 public class LocationTracker extends Activity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     protected static final String TAG = "location-updates-sample";
 
-    /**
+    */
+/**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-     */
+     *//*
+
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 30000;
 
-    /**
+    */
+/**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
      * than this value.
-     */
+     *//*
+
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
     // Keys for storing activity state in the Bundle.
@@ -61,19 +68,25 @@ public class LocationTracker extends Activity implements
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
-    /**
+    */
+/**
      * Provides the entry point to Google Play services.
-     */
+     *//*
+
     protected GoogleApiClient mGoogleApiClient;
 
-    /**
+    */
+/**
      * Stores parameters for requests to the FusedLocationProviderApi.
-     */
+     *//*
+
     protected LocationRequest mLocationRequest;
 
-    /**
+    */
+/**
      * Represents a geographical location.
-     */
+     *//*
+
     protected Location mCurrentLocation;
 
     // UI Widgets.
@@ -88,15 +101,19 @@ public class LocationTracker extends Activity implements
     protected String mLongitudeLabel;
     protected String mLastUpdateTimeLabel;
 
-    /**
+    */
+/**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
-     */
+     *//*
+
     protected Boolean mRequestingLocationUpdates;
 
-    /**
+    */
+/**
      * Time when the location was updated represented as a String.
-     */
+     *//*
+
     protected String mLastUpdateTime;
 
     private String session_id = "";
@@ -132,11 +149,13 @@ public class LocationTracker extends Activity implements
         buildGoogleApiClient();
     }
 
-    /**
+    */
+/**
      * Updates fields based on data stored in the bundle.
      *
      * @param savedInstanceState The activity state saved in the Bundle.
-     */
+     *//*
+
     private void updateValuesFromBundle(Bundle savedInstanceState) {
         Log.i(TAG, "Updating values from bundle");
         if (savedInstanceState != null) {
@@ -164,10 +183,12 @@ public class LocationTracker extends Activity implements
         }
     }
 
-    /**
+    */
+/**
      * Builds a GoogleApiClient. Uses the {@code #addApi} method to request the
      * LocationServices API.
-     */
+     *//*
+
     protected synchronized void buildGoogleApiClient() {
         Log.i(TAG, "Building GoogleApiClient");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -178,7 +199,8 @@ public class LocationTracker extends Activity implements
         createLocationRequest();
     }
 
-    /**
+    */
+/**
      * Sets up the location request. Android has two location request settings:
      * {@code ACCESS_COARSE_LOCATION} and {@code ACCESS_FINE_LOCATION}. These settings control
      * the accuracy of the current location. This sample uses ACCESS_FINE_LOCATION, as defined in
@@ -190,7 +212,8 @@ public class LocationTracker extends Activity implements
      * <p/>
      * These settings are appropriate for mapping applications that show real-time location
      * updates.
-     */
+     *//*
+
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
 
@@ -207,10 +230,12 @@ public class LocationTracker extends Activity implements
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    /**
+    */
+/**
      * Handles the Start Updates button and requests start of location updates. Does nothing if
      * updates have already been requested.
-     */
+     *//*
+
     public void startUpdatesButtonHandler(View view) {
         if (!mRequestingLocationUpdates) {
             mRequestingLocationUpdates = true;
@@ -219,10 +244,12 @@ public class LocationTracker extends Activity implements
         }
     }
 
-    /**
+    */
+/**
      * Handles the Stop Updates button, and requests removal of location updates. Does nothing if
      * updates were not previously requested.
-     */
+     *//*
+
     public void stopUpdatesButtonHandler(View view) {
         if (mRequestingLocationUpdates) {
             mRequestingLocationUpdates = false;
@@ -231,9 +258,11 @@ public class LocationTracker extends Activity implements
         }
     }
 
-    /**
+    */
+/**
      * Requests location updates from the FusedLocationApi.
-     */
+     *//*
+
     protected void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
@@ -251,11 +280,13 @@ public class LocationTracker extends Activity implements
                 mGoogleApiClient, mLocationRequest, this);
     }
 
-    /**
+    */
+/**
      * Ensures that only one button is enabled at any time. The Start Updates button is enabled
      * if the user is not requesting location updates. The Stop Updates button is enabled if the
      * user is requesting location updates.
-     */
+     *//*
+
     private void setButtonsEnabledState() {
         if (mRequestingLocationUpdates) {
             mStartUpdatesButton.setEnabled(false);
@@ -266,9 +297,11 @@ public class LocationTracker extends Activity implements
         }
     }
 
-    /**
+    */
+/**
      * Updates the latitude, the longitude, and the last location time in the UI.
-     */
+     *//*
+
     private void updateUI() {
 
         battery = getBatteryLevel();
@@ -287,9 +320,11 @@ public class LocationTracker extends Activity implements
                 mLastUpdateTime));
     }
 
-    /**
+    */
+/**
      * Removes location updates from the FusedLocationApi.
-     */
+     *//*
+
     protected void stopLocationUpdates() {
         // It is a good practice to remove location requests when the activity is in a paused or
         // stopped state. Doing so helps battery performance and is especially
@@ -322,9 +357,11 @@ public class LocationTracker extends Activity implements
     protected void onPause() {
         super.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
+*/
 /*        if (mGoogleApiClient.isConnected()) {
             stopLocationUpdates();
-        }*/
+        }*//*
+
     }
 
     @Override
@@ -334,9 +371,11 @@ public class LocationTracker extends Activity implements
         super.onStop();
     }
 
-    /**
+    */
+/**
      * Runs when a GoogleApiClient object successfully connects.
-     */
+     *//*
+
     @Override
     public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "Connected to GoogleApiClient");
@@ -375,9 +414,11 @@ public class LocationTracker extends Activity implements
         }
     }
 
-    /**
+    */
+/**
      * Callback that fires when the location changes.
-     */
+     *//*
+
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
@@ -403,9 +444,11 @@ public class LocationTracker extends Activity implements
     }
 
 
-    /**
+    */
+/**
      * Stores activity data in the Bundle.
-     */
+     *//*
+
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
@@ -426,3 +469,4 @@ public class LocationTracker extends Activity implements
         return ((float)level / (float)scale) * 100.0f;
     }
 }
+*/

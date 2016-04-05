@@ -1,12 +1,17 @@
 package com.amt.trackertest;
 
 import android.app.DialogFragment;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.amt.trackertest.httpTask.HttpHandler;
 
@@ -22,11 +27,19 @@ public class MainActivity extends AppCompatActivity {
     Button btnCreateSession;
     EditText etUserMail;
 
+    Button mStartUpdatesButton;
+    Button mStopUpdatesButton;
+    TextView mLastUpdateTimeTextView;
+    TextView mLatitudeTextView;
+    TextView mLongitudeTextView;
+
     String userMail = "";
     String user_id = "";
     String session_id = "";
 
     public static final String PREFS_NAME = "GPS_PREFS";
+
+    private SharedPreferences sharedPref;
 
 
     @Override
@@ -37,6 +50,11 @@ public class MainActivity extends AppCompatActivity {
         btnLogin = (Button) findViewById(R.id.btnLogin);
         btnCreateSession = (Button) findViewById(R.id.btnCreateSession);
         etUserMail = (EditText)findViewById(R.id.etUserMail);
+        mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
+        mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
+        mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
+        mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
+        mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
 
         final LogWriter lw = new LogWriter();
 
@@ -80,9 +98,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        sharedPref = this.getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
+
         btnCreateSession.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+
                 new HttpHandler() {
                     @Override
                     public void onResponse(String result) {
@@ -103,14 +125,69 @@ public class MainActivity extends AppCompatActivity {
                         args.putString("msg", temp);
                         back_dialog.setArguments(args);
                         back_dialog.show(getFragmentManager(), "Info msg");
-                        Intent myIntent = new Intent(v.getContext(), LocationTracker.class);
-                        myIntent.putExtra("session_id", session_id);
-                        startActivity(myIntent);
+
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(PREFS_NAME, session_id);
+                        editor.apply();
 
                     }
                 }.createSession(user_id);
             }
         });
 
+/*        mStartUpdatesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("StartSvc", "Button Click ");
+                Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
+                i.putExtra("foo", "bar");
+                mStartUpdatesButton.setEnabled(false);
+                mStopUpdatesButton.setEnabled(true);
+                ComponentName service = v.getContext().startService(i);
+                if (null == service){
+                    // something really wrong here
+                    mStartUpdatesButton.setEnabled(true);
+                    mStopUpdatesButton.setEnabled(false);
+                    Log.e("StartSvc", "Could not start service ");
+                }
+            }
+        });*/
+
+/*        mStartUpdatesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
+                i.putExtra("foo", "bar");
+                mStartUpdatesButton.setEnabled(true);
+                mStopUpdatesButton.setEnabled(false);
+                v.getContext().stopService(i);
+            }
+        });*/
+
     }
+
+    public void startUpdates(View v){
+        Log.e("StartSvc", "Button Click ");
+        Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
+        i.putExtra("foo", "bar");
+        mStartUpdatesButton.setEnabled(false);
+        mStopUpdatesButton.setEnabled(true);
+        ComponentName service = v.getContext().startService(i);
+        if (null == service){
+            // something really wrong here
+            mStartUpdatesButton.setEnabled(true);
+            mStopUpdatesButton.setEnabled(false);
+            Log.e("StartSvc", "Could not start service ");
+        }
+
+    }
+
+    public void stopUpdates(View v){
+        Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
+        i.putExtra("foo", "bar");
+        mStartUpdatesButton.setEnabled(true);
+        mStopUpdatesButton.setEnabled(false);
+        v.getContext().stopService(i);
+    }
+
 }
