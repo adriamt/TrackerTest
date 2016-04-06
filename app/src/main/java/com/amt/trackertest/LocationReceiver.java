@@ -25,6 +25,8 @@ public class LocationReceiver extends BroadcastReceiver {
 
     private Context mContext;
 
+    public LocationReceiver() {
+    }
 
     // WEB: https://developers.google.com/android/reference/com/google/android/gms/location/LocationResult.html#field-summary
 

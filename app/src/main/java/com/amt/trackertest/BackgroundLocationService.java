@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
@@ -155,6 +156,11 @@ public class BackgroundLocationService extends Service implements
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(10);  // Update location every 30 second. 10 = 1 second
+
+        IntentFilter filter = new IntentFilter("com.amt.trackertest.BroadcastReceiver");
+
+        LocationReceiver myReceiver = new LocationReceiver();
+        registerReceiver(myReceiver, filter);
 
         Intent intent = new Intent(this, LocationReceiver.class);
         PendingIntent pendingIntent = PendingIntent
