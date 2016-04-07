@@ -43,7 +43,8 @@ public class LocationReceiver extends BroadcastReceiver {
             this.mLocationResult = LocationResult.extractResult(intent);
             this.mLastLocation = mLocationResult.getLastLocation();
             Log.i("LocationReceiver", "Received Location");
-            Log.i("LocationReceiver", "Lat: " +String.valueOf(mLastLocation.getLatitude())+ "Lon: " + String.valueOf(mLastLocation.getLongitude()));
+            Log.i("LocationReceiver", "Lat: " +String.valueOf(mLastLocation.getLatitude())+ "Lon: " + String.valueOf(mLastLocation.getLongitude()) +
+                    " Acc: " + String.valueOf(mLastLocation.getAccuracy()) + " Long: " + String.valueOf(mLocationResult.getLocations().size()));
             battery = getBatteryLevel();
             new HttpHandler() {
                 @Override

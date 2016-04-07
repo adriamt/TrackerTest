@@ -56,6 +56,15 @@ public class MainActivity extends AppCompatActivity {
         mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
 
+        sharedPref = this.getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
+
+        String user_mail = sharedPref.getString("user_mail", "NULL");
+        if(!user_mail.equals("NULL")){
+            etUserMail.setText(user_mail);
+        }
+
+
+
         final LogWriter lw = new LogWriter();
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -86,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
                             back_dialog.setArguments(args);
                             back_dialog.show(getFragmentManager(), "Info msg");
 
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putString("user_mail", userMail);
+                            editor.apply();
+
+
                         }
                     }.login(userMail,"test");
                 }else{
@@ -99,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        sharedPref = this.getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
+
 
         btnCreateSession.setOnClickListener(new View.OnClickListener() {
             @Override
