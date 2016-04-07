@@ -37,11 +37,13 @@ public class LocationReceiver extends BroadcastReceiver {
         sharedPref = context.getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
         session_id = sharedPref.getString("session_id", "NULL");
         Log.i("LocationReceiver", "Something Received");
+        Log.i("LocationReceiver", "Session ID: " + session_id);
 
         if(LocationResult.hasResult(intent)) {
             this.mLocationResult = LocationResult.extractResult(intent);
             this.mLastLocation = mLocationResult.getLastLocation();
             Log.i("LocationReceiver", "Received Location");
+            Log.i("LocationReceiver", "Lat: " +String.valueOf(mLastLocation.getLatitude())+ "Lon: " + String.valueOf(mLastLocation.getLongitude()));
             battery = getBatteryLevel();
             new HttpHandler() {
                 @Override

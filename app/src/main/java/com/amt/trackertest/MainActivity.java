@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                         back_dialog.show(getFragmentManager(), "Info msg");
 
                         SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(PREFS_NAME, session_id);
+                        editor.putString("session_id", session_id);
                         editor.apply();
 
                     }
@@ -183,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopUpdates(View v){
+        Log.e("StopSvc", "Button Click ");
         Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
         i.putExtra("foo", "bar");
         mStartUpdatesButton.setEnabled(true);

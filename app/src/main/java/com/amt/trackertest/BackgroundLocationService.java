@@ -11,6 +11,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
@@ -39,7 +40,7 @@ public class BackgroundLocationService extends Service implements
     private LocationRequest mLocationRequest;
 
     // Flag that indicates if a request is underway.
-    private boolean mInProgress;
+    private boolean mInProgress = false;
 
     private Boolean servicesAvailable = false;
     private PowerManager.WakeLock mWakeLock;
@@ -55,6 +56,8 @@ public class BackgroundLocationService extends Service implements
         super.onCreate();
         Log.i("BGLocationSvc", "On Create");
         buildGoogleApiClient();
+        Log.i(TAG, "OnstartCommand GoogleApiConect");
+        mGoogleApiClient.connect();
     }
 /*
     private boolean servicesConnected() {
@@ -69,9 +72,11 @@ public class BackgroundLocationService extends Service implements
         }
     }*/
 
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
+        Log.i(TAG, "OnstartCommand");
         PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
     /*
@@ -86,13 +91,16 @@ public class BackgroundLocationService extends Service implements
             this.mWakeLock.acquire();
         }
 
-        if (!servicesAvailable || mInProgress)
+ /*       if (!servicesAvailable || mInProgress) {
+            Log.i(TAG, "!servicesAvailable || mInProgress");
             return START_STICKY;
+        }
         if (!mGoogleApiClient.isConnected() || !mGoogleApiClient.isConnecting() && !mInProgress) {
             appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Started", Constants.LOG_FILE);
             mInProgress = true;
+            Log.i(TAG, "OnstartCommand GoogleApiConect");
             mGoogleApiClient.connect();
-        }
+        }*/
         return START_STICKY;
     }
 
@@ -125,17 +133,24 @@ public class BackgroundLocationService extends Service implements
         }
     }
 
+
     @Override
     public void onDestroy() {
         // Turn off the request flag
+        Log.i(TAG, "OnDestroy");
         this.mInProgress = false;
-        if (this.servicesAvailable && this.mGoogleApiClient != null) {
+        Intent intent = new Intent(this, LocationReceiver.class);
+        PendingIntent pendingIntent = PendingIntent
+                .getBroadcast(this, 54321, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,pendingIntent);
+        this.mGoogleApiClient.disconnect();
+/*        if (this.servicesAvailable && this.mGoogleApiClient != null) {
             this.mGoogleApiClient.unregisterConnectionCallbacks(this);
             this.mGoogleApiClient.unregisterConnectionFailedListener(this);
             this.mGoogleApiClient.disconnect();
             // Destroy the current location client
             this.mGoogleApiClient = null;
-        }
+        }*/
         // Display the connection status
         // Toast.makeText(this, DateFormat.getDateTimeInstance().format(new Date()) + ":
         // Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
@@ -155,12 +170,12 @@ public class BackgroundLocationService extends Service implements
     public void onConnected(Bundle bundle) {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(10);  // Update location every 30 second. 10 = 1 second
+        mLocationRequest.setInterval(30000);  // Update location every 30 second. 10 = 1 second
 
-        IntentFilter filter = new IntentFilter("com.amt.trackertest.BroadcastReceiver");
+/*        IntentFilter filter = new IntentFilter("com.amt.trackertest.BroadcastReceiver");
 
         LocationReceiver myReceiver = new LocationReceiver();
-        registerReceiver(myReceiver, filter);
+        registerReceiver(myReceiver, filter);*/
 
         Intent intent = new Intent(this, LocationReceiver.class);
         PendingIntent pendingIntent = PendingIntent
@@ -177,6 +192,7 @@ public class BackgroundLocationService extends Service implements
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient,
                 mLocationRequest, pendingIntent);
+
 
     }
 
