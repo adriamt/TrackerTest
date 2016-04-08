@@ -170,8 +170,8 @@ public class BackgroundLocationService extends Service implements
     public void onConnected(Bundle bundle) {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(30000);  // milis
-        mLocationRequest.setFastestInterval(15000);
+        mLocationRequest.setInterval(60000);  // milis
+        mLocationRequest.setFastestInterval(30000);
 
 /*        IntentFilter filter = new IntentFilter("com.amt.trackertest.BroadcastReceiver");
 

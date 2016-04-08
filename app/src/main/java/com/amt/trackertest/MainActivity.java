@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amt.trackertest.httpTask.HttpHandler;
 
@@ -149,35 +150,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-/*        mStartUpdatesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("StartSvc", "Button Click ");
-                Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
-                i.putExtra("foo", "bar");
-                mStartUpdatesButton.setEnabled(false);
-                mStopUpdatesButton.setEnabled(true);
-                ComponentName service = v.getContext().startService(i);
-                if (null == service){
-                    // something really wrong here
-                    mStartUpdatesButton.setEnabled(true);
-                    mStopUpdatesButton.setEnabled(false);
-                    Log.e("StartSvc", "Could not start service ");
-                }
-            }
-        });*/
-
-/*        mStartUpdatesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(v.getContext(), BackgroundLocationService.class);
-                i.putExtra("foo", "bar");
-                mStartUpdatesButton.setEnabled(true);
-                mStopUpdatesButton.setEnabled(false);
-                v.getContext().stopService(i);
-            }
-        });*/
-
     }
 
     public void startUpdates(View v){
@@ -186,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra("foo", "bar");
         mStartUpdatesButton.setEnabled(false);
         mStopUpdatesButton.setEnabled(true);
+        Toast.makeText(getBaseContext(),"Service Started!", Toast.LENGTH_SHORT).show();
         ComponentName service = v.getContext().startService(i);
         if (null == service){
             // something really wrong here
@@ -202,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra("foo", "bar");
         mStartUpdatesButton.setEnabled(true);
         mStopUpdatesButton.setEnabled(false);
+        Toast.makeText(getBaseContext(),"Service Stoped!",Toast.LENGTH_SHORT).show();
         v.getContext().stopService(i);
     }
 
