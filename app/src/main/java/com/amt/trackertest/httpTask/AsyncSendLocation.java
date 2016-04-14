@@ -79,7 +79,7 @@ public class AsyncSendLocation {
 
                     JSONObject jo = new JSONObject((String.valueOf(sb)));
                     JSONObject data = jo.getJSONObject("data");
-                    resposta = (data.getString("id"));
+                    resposta = (data.getString("interval"));
                 } catch (IOException e) {
                     lw.writeToFile("AsyncSendLocation:[" + formattedDate + "] " + e.getMessage());
                     e.printStackTrace();

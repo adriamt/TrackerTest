@@ -1,6 +1,7 @@
 package com.amt.trackertest;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -25,6 +26,9 @@ public class LocationReceiver extends BroadcastReceiver {
 
     private Context mContext;
 
+
+    private String INTERVAL_MILLIS = "";
+
     public LocationReceiver() {
     }
 
@@ -36,8 +40,10 @@ public class LocationReceiver extends BroadcastReceiver {
         // Need to check and grab the Intent's extras like so
         sharedPref = context.getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
         session_id = sharedPref.getString("session_id", "NULL");
+        INTERVAL_MILLIS = sharedPref.getString("interval_millis", "NULL");
         Log.i("LocationReceiver", "Something Received");
         Log.i("LocationReceiver", "Session ID: " + session_id);
+        Log.i("LocationReceiver", "Interval : " + INTERVAL_MILLIS);
 
         if(LocationResult.hasResult(intent)) {
             this.mLocationResult = LocationResult.extractResult(intent);
@@ -49,6 +55,19 @@ public class LocationReceiver extends BroadcastReceiver {
             new HttpHandler() {
                 @Override
                 public void onResponse(String result) {
+                    if(!INTERVAL_MILLIS.equals(result)) {
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString("interval_millis", result);
+                        editor.apply();
+                        Intent i2 = new Intent(mContext, BackgroundLocationService.class);
+                        i2.putExtra("foo", "bar");
+                        Log.e("StopSvc", "Service");
+                        mContext.stopService(i2);
+                        Intent i = new Intent(mContext, BackgroundLocationService.class);
+                        i.putExtra("foo", "bar");
+                        Log.e("StartSvc", "Service");
+                        mContext.startService(i);
+                    }
 
                 }
             }.sendLocation(String.valueOf(mLastLocation.getLatitude()), String.valueOf(mLastLocation.getLongitude()), session_id, String.valueOf(battery));

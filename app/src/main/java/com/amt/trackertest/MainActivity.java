@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String PREFS_NAME = "GPS_PREFS";
 
+    private static final String INTERVAL_MILLIS = "60000";
+
     private SharedPreferences sharedPref;
 
 
@@ -64,7 +66,9 @@ public class MainActivity extends AppCompatActivity {
             etUserMail.setText(user_mail);
         }
 
-
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("interval_millis", INTERVAL_MILLIS);
+        editor.apply();
 
         final LogWriter lw = new LogWriter();
 

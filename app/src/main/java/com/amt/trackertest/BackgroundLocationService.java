@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ public class BackgroundLocationService extends Service implements
     IBinder mBinder = new LocalBinder();
 
     private static final String TAG = "BGLocationSvc";
+    private String INTERVAL_MILLIS = "";
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -44,6 +46,9 @@ public class BackgroundLocationService extends Service implements
 
     private Boolean servicesAvailable = false;
     private PowerManager.WakeLock mWakeLock;
+
+    public static final String PREFS_NAME = "GPS_PREFS";
+    private SharedPreferences sharedPref;
 
     public class LocalBinder extends Binder {
         public BackgroundLocationService getServerInstance() {
@@ -57,6 +62,9 @@ public class BackgroundLocationService extends Service implements
         Log.i("BGLocationSvc", "On Create");
         buildGoogleApiClient();
         Log.i(TAG, "OnstartCommand GoogleApiConect");
+        sharedPref = this.getSharedPreferences(PREFS_NAME,Context.MODE_PRIVATE);
+        INTERVAL_MILLIS = sharedPref.getString("interval_millis", "NULL");
+        Log.i("BkgLocSvc", "Interval : " + INTERVAL_MILLIS);
         mGoogleApiClient.connect();
     }
 /*
@@ -170,8 +178,9 @@ public class BackgroundLocationService extends Service implements
     public void onConnected(Bundle bundle) {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(60000);  // milis
-        mLocationRequest.setFastestInterval(30000);
+        Integer int_millis = Integer.parseInt(INTERVAL_MILLIS);
+        mLocationRequest.setInterval(int_millis);  // milis
+        mLocationRequest.setFastestInterval(int_millis/2);
 
 /*        IntentFilter filter = new IntentFilter("com.amt.trackertest.BroadcastReceiver");
 
